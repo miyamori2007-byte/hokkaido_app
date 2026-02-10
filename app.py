@@ -1,4 +1,40 @@
 import streamlit as st
+import pandas as pd
+import plotly.express as px
+from predict import run_prediction
+
+# ────────────────
+# サイドバー
+# ────────────────
+st.sidebar.title("操作パネル")
+
+prefecture = st.sidebar.selectbox("都道府県を選択", ["北海道"])  # 今回は北海道だけ
+candidate = st.sidebar.selectbox("候補者を選択", ["Aさん", "Bさん", "Cさん"])  # データに合わせて
+
+if st.sidebar.button("予測する"):
+    # run_prediction関数を使って得票率データを取得
+    results = run_prediction(prefecture, candidate)  
+    # 例: results = {"Aさん": 35, "Bさん": 40, "Cさん": 25}
+
+    # ────────────────
+    # データフレーム化
+    # ────────────────
+    df = pd.DataFrame({
+        "候補者": list(results.keys()),
+        "得票率": list(results.values())
+    })
+
+    # ────────────────
+    # グラフ表示 (Plotly)
+    # ────────────────
+    fig = px.bar(df, x="候補者", y="得票率", color="候補者", text="得票率")
+    st.plotly_chart(fig, use_container_width=True)
+
+    # ────────────────
+    # データ表としても表示
+    # ────────────────
+    st.write(df)
+import streamlit as st
 from predict import run_prediction
 import subprocess
 import os
@@ -52,3 +88,4 @@ if st.button("予測を実行"):
         result.to_csv(index=False, encoding="utf-8-sig"),
         file_name="hokkaido_1to3_final_prediction.csv"
     )
+
