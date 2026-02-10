@@ -2,13 +2,15 @@ import pandas as pd
 import json
 from sklearn.linear_model import LogisticRegression
 
-def run_prediction():
+def run_prediction(prefecture=None, candidate=None):
+    # データ読み込み
     candidates = pd.read_csv("hokkaido_candidates_1to3.csv")
     districts = pd.read_csv("japan_election_districts_289.csv")
 
     with open("election_survey.json", "r", encoding="utf-8") as f:
         survey = json.load(f)
 
+    # 政党支持率
     party_support = {
         "自由民主党": survey["party_momentum"]["ldp"]["support_rate"],
         "中道改革連合": survey["party_momentum"]["chudou"]["support_rate"],
@@ -24,15 +26,9 @@ def run_prediction():
 
     candidates["is_incumbent"] = candidates["新前元の別"].map({"新": 0, "前": 1, "元": 1})
     candidates["has_dual"] = candidates["重複立候補の有無"].map({"有": 1, "無": 0})
+    candidates["district_type"] = candidates["選挙区"].apply(lambda x: 0 if "第1区" in x else 1)
 
-    candidates["district_type"] = candidates["選挙区"].apply(
-        lambda x: 0 if "第1区" in x else 1
-    )
-
-    X = candidates[
-        ["年齢", "party_support", "is_incumbent", "has_dual", "district_type"]
-    ]
-
+    X = candidates[["年齢", "party_support", "is_incumbent", "has_dual", "district_type"]]
     y = (
         0.4 * candidates["party_support"]
         + 0.3 * candidates["is_incumbent"]
@@ -52,6 +48,11 @@ def run_prediction():
         .head(1)
     )
 
+    # 特定候補者のみ表示したい場合
+    if candidate:
+        result = result[result["候補者名"] == candidate]
+
+    # CSV出力
     result.to_csv(
         "hokkaido_1to3_final_prediction.csv",
         index=False,
@@ -59,14 +60,3 @@ def run_prediction():
     )
 
     return result
-def main():
-    print("predict.py started")
-
-    # 既存の予測処理をここに全部入れる
-    # CSVを書き出す処理もここ
-
-    print("predict.py finished")
-
-
-if __name__ == "__main__":
-    main()
