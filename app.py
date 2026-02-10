@@ -88,4 +88,14 @@ if st.button("予測を実行"):
         result.to_csv(index=False, encoding="utf-8-sig"),
         file_name="hokkaido_1to3_final_prediction.csv"
     )
+# 例: 予測結果を確認
+results = run_prediction("北海道", "Aさん")
+
+# ターミナルで確認する場合
+print(results)
+
+# Streamlit 上で確認する場合
+st.write("### run_prediction の返り値")
+st.write(results)
+
 
