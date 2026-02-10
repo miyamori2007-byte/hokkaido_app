@@ -29,6 +29,7 @@ prefecture = st.sidebar.selectbox("都道府県を選択", ["北海道"])
 # CSVから候補者名を取得
 candidates_df = pd.read_csv("hokkaido_candidates_1to3.csv")
 candidate_list = candidates_df["候補者名"].tolist()
+candidate_list.insert(0, "全員表示")  # 先頭に「全員表示」を追加
 candidate = st.sidebar.selectbox("候補者を選択", candidate_list)
 
 # --- データ更新 ---
@@ -40,7 +41,10 @@ if st.sidebar.button("データを最新化"):
 
 # --- 予測 ---
 if st.sidebar.button("予測を実行"):
-    results = run_prediction(prefecture, candidate)
+    if candidate == "全員表示":
+        results = run_prediction(prefecture)
+    else:
+        results = run_prediction(prefecture, candidate)
 
     st.subheader("当選予測結果")
     st.dataframe(results)
@@ -58,6 +62,7 @@ if st.sidebar.button("予測を実行"):
         x="候補者名",
         y="win_probability",
         color="候補者届出政党の名称",
-        text="win_probability"
+        text="win_probability",
+        title="当選確率グラフ"
     )
     st.plotly_chart(fig, use_container_width=True)
